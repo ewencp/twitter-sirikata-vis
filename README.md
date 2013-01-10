@@ -31,3 +31,27 @@ Usage
 1. Collect data. Create credentials.json with your username and
    password and use collect.py, which will generate hourly files
    containing tweet data.
+
+2. Start the space server and an object host with appropriate
+   settings, enabling Twitter specific settings.
+
+    ./space_d --command.commander=http \
+              --command.commander-options=--port=7777 \
+              --space.extra-plugins=space-twitter \
+              --aggmgr=twitter
+
+    ./cppoh_d --command.commander=http \
+              --command.commander-options=--port=7778 \
+              --oh.extra-plugins=oh-twitter \
+              --object-factory-opts=--db=/path/to/repo/scenes/twitter-client.db \
+              --objecthost=--scriptManagers=js:{--import-paths=/home/ewencp/twitter-vis.git/emerson}
+
+3. Replay the data with the Python script:
+
+    ./replay tweets-[some-date-info].log
+
+   which will read tweets from the file, do some processing and add
+   "meshes" to the "CDN", generate objects on the object hosts, and
+   use those objects to create presences for tweets.
+
+4. Also run a client to visualize the world as tweets are added.
