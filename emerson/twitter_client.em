@@ -12,7 +12,7 @@ std.simpleStorage.setScript(
         system.require('std/scriptingGui/fileReceiver.em');
         system.require('std/movement/movable.em');
         system.require('std/movement/animatable.em');
-        system.require('std/twitter.em');
+        system.require('std/clutter.em');
 
         scriptable = new std.script.Scriptable();
         movable = new std.movement.Movable(true); // Self only
@@ -25,7 +25,7 @@ std.simpleStorage.setScript(
 
 
         var init = function() {
-            renderer = new std.twitter.TwitterRenderer(system.self);
+            renderer = new std.clutter.ClutterRenderer(system.self);
             system.registerCommandHandler(
                 function(data) {
                     if (data.event === undefined)

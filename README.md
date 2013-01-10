@@ -42,7 +42,7 @@ Usage
 
     ./cppoh_d --command.commander=http \
               --command.commander-options=--port=7778 \
-              --oh.extra-plugins=oh-twitter \
+              --oh.extra-plugins=oh-clutter \
               --object-factory-opts=--db=/path/to/repo/scenes/twitter-client.db \
               --objecthost=--scriptManagers=js:{--import-paths=/home/ewencp/twitter-vis.git/emerson}
 
