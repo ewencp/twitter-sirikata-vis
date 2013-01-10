@@ -24,3 +24,10 @@ of:
   aggregates.
 
 * Driver scripts to get all the components of Sirikata up and running.
+
+Usage
+-----
+
+1. Collect data. Create credentials.json with your username and
+   password and use collect.py, which will generate hourly files
+   containing tweet data.
