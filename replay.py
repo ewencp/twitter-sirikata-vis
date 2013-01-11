@@ -94,6 +94,7 @@ first_tweet_at = None
 processed = 0
 oh_host = 'localhost'
 oh_port = 7778
+speed_factor = 1
 
 with open(sys.argv[1], 'r') as fp:
     for line in fp:
@@ -107,6 +108,7 @@ with open(sys.argv[1], 'r') as fp:
         # Wait until we should actually process the tweet
         now = time.time()
         since_started = now - started
+        since_started = since_started * speed_factor # Allow high-speed
         tweeted_after = tweeted_at - first_tweet_at
         if tweeted_after > since_started:
             time.sleep(tweeted_after - since_started)
@@ -155,14 +157,14 @@ with open(sys.argv[1], 'r') as fp:
             tweet_group = []
             tweet_grid[tweet_pos] = tweet_group
             print "[%d] Tweet triggered new tweet group, resulting in %d groups for %d tweets so far (%s)" % (tweeted_after, tweet_grid.num_active(), processed, tweet['text'])
-            cmd_params = {
-                'object' : ho_id,
-                'event' : 'new_tweet',
-                'pos' : {
-                    'lon' : tweet_pos.lon,
-                    'lat' : tweet_pos.lat,
-                    },
-                'text' : tweet['text']
-                }
-            result = http_command(oh_host, oh_port, 'oh.objects.command', params=cmd_params)
-            if result is None or 'error' in result: print "Error handling command:", result and result['error']
+        cmd_params = {
+            'object' : ho_id,
+            'event' : 'new_tweet',
+            'pos' : {
+                'lon' : tweet_pos.lon,
+                'lat' : tweet_pos.lat,
+                },
+            'text' : tweet['text']
+            }
+        result = http_command(oh_host, oh_port, 'oh.objects.command', params=cmd_params)
+        if result is None or 'error' in result: print "Error handling command:", result and result['error']

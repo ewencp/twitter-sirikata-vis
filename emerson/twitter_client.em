@@ -26,18 +26,34 @@ std.simpleStorage.setScript(
 
         var init = function() {
             renderer = new std.clutter.ClutterRenderer(system.self);
-            system.registerCommandHandler(
-                function(data) {
-                    if (data.event === undefined)
-                        return { 'error' : 'Invalid format' };
+            renderer.stage_set_size(900, 600);
+            renderer.stage_set_color(128, 128, 128);
+            var dots = {};
 
-                    system.print('Creating tweet presence at <' + data.pos.lon + ', ' + data.pos.lat + '> ("' + data.text + '")');
+            system.self.onProxAdded(function(vis) {
+                var rect_id = renderer.rectangle_create();
+                renderer.rectangle_set_color(rect_id, 255, 255, 255);
 
-                    return {
-                        'success' : 'true'
-                    };
+                // ~ United States
+                var world_min = <-129.02, 24.9, 0>;
+                var world_max = <-58.71, 50.6, 0>;
+                var win_size = <800, 600, 0>;
+                var frac_x = (vis.position.x - world_min.x) / (world_max.x - world_min.x);
+                var frac_y = (vis.position.y - world_min.y) / (world_max.y - world_min.y);
+                renderer.actor_set_position(rect_id, frac_x*win_size.x, (1-frac_y)*win_size.y);
+
+                renderer.actor_set_size(rect_id, 2, 2);
+                renderer.actor_show(rect_id);
+
+                dots[vis.toString()] = rect_id;
+            });
+
+            system.self.onProxRemoved(function(vis) {
+                var rect_id = dots[vis.toString()];
+                if (rect_id !== undefined) {
+                    renderer.actor_destroy(rect_id);
                 }
-            );
+            });
         };
 
         if (system.self)
