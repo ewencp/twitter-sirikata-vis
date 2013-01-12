@@ -29,13 +29,16 @@ class Grid(object):
         lat_bin_index = min(max(lat_bin_index, 0), self._div.lat-1)
         return Coord(lon_bin_index, lat_bin_index)
 
-    def __getitem__(self, pos):
+    def bin_id(self, pos):
+        '''Get a unique ID for the bin a position is in'''
         int_pos = self._get_bin_index(pos)
-        return self._bins[ int_pos.lat*self._div.lon + int_pos.lon ]
+        return int_pos.lat*self._div.lon + int_pos.lon
+
+    def __getitem__(self, pos):
+        return self._bins[self.bin_id(pos)]
 
     def __setitem__(self, pos, value):
-        int_pos = self._get_bin_index(pos)
-        self._bins[ int_pos.lat*self._div.lon + int_pos.lon ] = value
+        self._bins[self.bin_id(pos)] = value
 
     def num_active(self):
         '''Returns the total number of active (non empty) grid regions'''
@@ -154,17 +157,23 @@ with open(sys.argv[1], 'r') as fp:
         # Send message to add it to the right presence (maybe creating the presence in the Emerson script)
         tweet_group = tweet_grid[tweet_pos]
         if tweet_group is None:
-            tweet_group = []
+            tweet_group = {
+                'id' : tweet_grid.bin_id(tweet_pos),
+                'count' : 0
+                }
             tweet_grid[tweet_pos] = tweet_group
             print "[%d] Tweet triggered new tweet group, resulting in %d groups for %d tweets so far (%s)" % (tweeted_after, tweet_grid.num_active(), processed, tweet['text'])
+        tweet_group['count'] += 1
         cmd_params = {
             'object' : ho_id,
             'event' : 'new_tweet',
+            'group' : tweet_group['id'],
+            'group_count' : tweet_group['count'],
             'pos' : {
                 'lon' : tweet_pos.lon,
                 'lat' : tweet_pos.lat,
                 },
-            'text' : tweet['text']
+            'text' : tweet['text'],
             }
         result = http_command(oh_host, oh_port, 'oh.objects.command', params=cmd_params)
         if result is None or 'error' in result: print "Error handling command:", result and result['error']

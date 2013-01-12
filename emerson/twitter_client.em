@@ -27,12 +27,12 @@ std.simpleStorage.setScript(
         var init = function() {
             renderer = new std.clutter.ClutterRenderer(system.self);
             renderer.stage_set_size(900, 600);
-            renderer.stage_set_color(128, 128, 128);
+            renderer.stage_set_color(0, 0, 0);
             var dots = {};
 
             system.self.onProxAdded(function(vis) {
                 var rect_id = renderer.rectangle_create();
-                renderer.rectangle_set_color(rect_id, 255, 255, 255);
+                renderer.rectangle_set_color(rect_id, 127, 127, 127);
 
                 // ~ United States
                 var world_min = <-129.02, 24.9, 0>;
@@ -42,10 +42,19 @@ std.simpleStorage.setScript(
                 var frac_y = (vis.position.y - world_min.y) / (world_max.y - world_min.y);
                 renderer.actor_set_position(rect_id, frac_x*win_size.x, (1-frac_y)*win_size.y);
 
+                //renderer.actor_set_size(rect_id, vis.scale, vis.scale);
                 renderer.actor_set_size(rect_id, 2, 2);
                 renderer.actor_show(rect_id);
 
                 dots[vis.toString()] = rect_id;
+
+                vis.onScaleChanged(function(vis) {
+                    //renderer.actor_set_size(rect_id, vis.scale, vis.scale);
+                    var col = vis.scale-1;
+                    if (col > 16) col = 16;
+                    col = 127 + (8 * col);
+                    renderer.rectangle_set_color(rect_id, col, 127, 127);
+                });
             });
 
             system.self.onProxRemoved(function(vis) {
