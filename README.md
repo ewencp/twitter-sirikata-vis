@@ -38,7 +38,9 @@ Usage
     ./space_d --command.commander=http \
               --command.commander-options=--port=7777 \
               --space.extra-plugins=space-twitter \
-              --aggmgr=twitter
+              --aggmgr=twitter \
+              --prox.object.handler=rtreecutagg \
+              --prox.server.handler=rtreecutagg
 
     ./cppoh_d --command.commander=http \
               --command.commander-options=--port=7778 \

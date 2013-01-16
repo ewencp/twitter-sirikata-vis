@@ -3,3 +3,9 @@ credentials.json
 
 # Collected data
 tweets-*.log
+
+# Python by-products
+*.pyc
+
+# data directory
+data/

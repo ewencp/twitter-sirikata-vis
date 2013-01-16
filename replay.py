@@ -5,6 +5,52 @@ from collections import namedtuple
 from itertools import chain, product
 
 import httplib, urllib, socket, math
+import threading, os, shutil
+
+import nltk, twtokenize
+import SimpleHTTPServer, SocketServer
+
+def ascii_safe(item):
+    if type(item) == tuple:
+        item = ' '.join(item)
+    item = unicodedata.normalize('NFKD', unicode(item)).encode('ascii', 'ignore')
+    return item
+
+# Stop words. NLTK provides some in their data set (you need to use
+# their nltk.download() tool to get them). They could probably be
+# better. Add a few more to deal with obvious missing items,
+# punctuation, bad spelling. These aren't actually critical since we compare to a
+# baseline data set, but they help cut down the size of the data.
+stopwords = nltk.corpus.stopwords.words('english') + [
+    '?', '!', ';', '$', '%', '&', '-', '+', '=', '|', '`', '_', '.', '{', '}', ',', '/', '[', ']', '#', '@', ':', "'", '(', ')', '^', '~', '*', #punctuation
+    'c', 'u', 'r', 'o', 'd', 'e', 'f', 'g', 'v', 'h', 'x', 'w', 'j', 'y', 'k', 'l', 'z', 'm', 'n', 'p', 'b', 'q' # bad spelling
+    ]
+stopwords = set(stopwords)
+
+def splitlist(l, on):
+    '''Split a list into a sublists when any element in 'on' is found,
+    removing that element in the process.'''
+    last_idx = 0
+    idx = 0
+    while idx < len(l):
+        while idx < len(l):
+            if l[idx] in on:
+                break
+            idx += 1
+        yield l[last_idx:idx]
+        idx += 1
+        last_idx = idx
+
+def tokenize_and_ngram(text):
+    tokens = [x.lower() for x in twtokenize.word_tokenize(text)]
+    # Split into sublists using stopwords. This keeps us from
+    # generating n-grams from words that aren't actually next
+    # to each other. This step also removes the stopwords
+    tokens = list(splitlist(tokens, stopwords))
+    bgrams = [nltk.ibigrams(subtokens) for subtokens in tokens]
+    tgrams = [nltk.itrigrams(subtokens) for subtokens in tokens]
+    terms = list(chain(*(tokens + bgrams + tgrams)))
+    return terms
 
 def average(l):
     return float(sum(l))/len(l)
@@ -99,7 +145,28 @@ oh_host = 'localhost'
 oh_port = 7778
 speed_factor = 1
 
-with open(sys.argv[1], 'r') as fp:
+tweet_file = os.path.abspath(sys.argv[1])
+
+# Start up a web server
+# Set this up and make sure it's ready in this thread so it'll
+# definitely be ready to hold data generated in the main thread
+data_dir = os.path.join(os.getcwd(), 'data')
+if os.path.exists(data_dir): shutil.rmtree(data_dir)
+os.mkdir(data_dir)
+HTTP_PORT = 10000
+def http_server_main():
+    os.chdir(data_dir)
+    httpd = SocketServer.TCPServer(('',HTTP_PORT), SimpleHTTPServer.SimpleHTTPRequestHandler)
+    httpd.serve_forever()
+
+http_thread = threading.Thread(target=http_server_main)
+http_thread.daemon = True
+http_thread.start()
+
+
+
+# Parse tweets, generate "meshes", and create/notify objects of their tweets
+with open(tweet_file, 'r') as fp:
     for line in fp:
         tweet = json.loads(line)
         # FIXME? the +0000 should be %z but is currently failing. It
@@ -164,6 +231,25 @@ with open(sys.argv[1], 'r') as fp:
             tweet_grid[tweet_pos] = tweet_group
             print "[%d] Tweet triggered new tweet group, resulting in %d groups for %d tweets so far (%s)" % (tweeted_after, tweet_grid.num_active(), processed, tweet['text'])
         tweet_group['count'] += 1
+        terms = tokenize_and_ngram(tweet['text'])
+
+        # Add this tweet to its group's "mesh" data, or create it
+        json_filename = '%d.json' % tweet_group['id']
+        mesh_file = os.path.join(data_dir, json_filename)
+        if os.path.exists(mesh_file):
+            mesh_data = json.load(open(mesh_file, 'rb'))
+        else:
+            mesh_data = {'tweets': []}
+        mesh_data['tweets'].append({
+                'text' : tweet['text'],
+                'terms' : terms
+                });
+        json.dump(mesh_data, open(mesh_file, 'wb'))
+        # The URL has an extra query parameter on the end to make each
+        # version unique since we use the same basic ID for the object
+        # but change the "mesh" file contents
+        mesh_url = 'http://localhost:%d/%s?v=%d' % (HTTP_PORT, json_filename, len(mesh_data['tweets']))
+
         cmd_params = {
             'object' : ho_id,
             'event' : 'new_tweet',
@@ -173,6 +259,7 @@ with open(sys.argv[1], 'r') as fp:
                 'lon' : tweet_pos.lon,
                 'lat' : tweet_pos.lat,
                 },
+            'mesh' : mesh_url,
             'text' : tweet['text'],
             }
         result = http_command(oh_host, oh_port, 'oh.objects.command', params=cmd_params)

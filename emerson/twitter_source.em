@@ -35,11 +35,12 @@ var init = function() {
                 };
 
                 //system.print('Creating tweet group presence at <' + data.pos.lon + ', ' + data.pos.lat + '> ("' + data.text + '")\n');
+                //system.print('Creating tweet group presence with "mesh" URL ' + data.mesh + '\n');
                 system.createPresence({
                     'space': '12345678-1111-1111-1111-DEFA01759ACE',
                     'pos': <data.pos.lon, data.pos.lat, 0>,
                     //'orient': x,
-                    'mesh': '',
+                    'mesh': data.mesh,
                     'scale': 1,
                     //'solidAngleQuery': x,
                     'callback': function(pres) {
@@ -56,6 +57,7 @@ var init = function() {
                 group.add_presence_ready_callback(function(pres) {
                     system.print('Group ' + data.group + ' grew to size ' + data.group_count + '\n');
                     pres.scale = data.group_count;
+                    pres.mesh = data.mesh;
                 });
             }
 
