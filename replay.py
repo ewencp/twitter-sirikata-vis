@@ -154,9 +154,36 @@ data_dir = os.path.join(os.getcwd(), 'data')
 if os.path.exists(data_dir): shutil.rmtree(data_dir)
 os.mkdir(data_dir)
 HTTP_PORT = 10000
+class AggregateHttpRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+    '''Handles receiving and serving aggregate tweet data. It extends
+    SimpleHTTPRequestHandler to serve read requests from the
+    filesystem and overrides do_POST to handle upload requests, which
+    are stored on disk to be served for GETs.'''
+    def do_POST(self):
+        print "Handling POST", self.path
+
+        raw_id = self.path[1:] # remove / from front
+        mesh_file = os.path.join(data_dir, raw_id)
+        with open(mesh_file, 'wb') as fp:
+            target_count = int(self.headers.get('Content-Length', 0))
+            count = 0
+            while count < target_count:
+                data = self.rfile.read(target_count-count)
+                count += len(data)
+                fp.write(data)
+
+        print "Saved file POST", self.path
+
+        self.send_response(200)
+        self.send_header("Content-Type", "text/json")
+        self.send_header("Content-Length", 0)
+        self.end_headers()
+
+        print "Finished handling POST", self.path
+
 def http_server_main():
     os.chdir(data_dir)
-    httpd = SocketServer.TCPServer(('',HTTP_PORT), SimpleHTTPServer.SimpleHTTPRequestHandler)
+    httpd = SocketServer.TCPServer(('',HTTP_PORT), AggregateHttpRequestHandler)
     httpd.serve_forever()
 
 http_thread = threading.Thread(target=http_server_main)

@@ -40,7 +40,9 @@ Usage
               --space.extra-plugins=space-twitter \
               --aggmgr=twitter \
               --prox.object.handler=rtreecutagg \
-              --prox.server.handler=rtreecutagg
+              --prox.server.handler=rtreecutagg \
+              --aggmgr.host=localhost \
+              --aggmgr.service=10000
 
     ./cppoh_d --command.commander=http \
               --command.commander-options=--port=7778 \
