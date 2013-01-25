@@ -1,2 +1,5 @@
 "objtype","pos_x","pos_y","pos_z","scale","meshURI","script_type","script_contents","query","physics"
-"mesh",0,0,0,2,"","js","system.import('twitter_client.em');","{"angle":0.000000001}","{"treatment":"character", "bounds":"box"}"
+#quarter US
+#"mesh",-93,37,0,2,"","js","system.import('twitter_client.em');","{"term":"warrior","region":{"min":[-129.02,24.9],"max":[-93.5,37.5]},"results":50}","{"treatment":"character", "bounds":"box"}"
+#whole US
+"mesh",-93,37,0,2,"","js","system.import('twitter_client.em');","{"term":"square","region":{"min":[-129.02,24.9],"max":[-58.71,50.6]},"results":200}","{"treatment":"character", "bounds":"box"}"

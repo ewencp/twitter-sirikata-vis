@@ -56,7 +56,7 @@ var init = function() {
                 var group = groups[group_id];
                 group.add_presence_ready_callback(function(pres) {
                     system.print('Group ' + data.group + ' grew to size ' + data.group_count + '\n');
-                    pres.scale = data.group_count;
+                    //pres.scale = data.group_count;
                     pres.mesh = data.mesh;
                 });
             }

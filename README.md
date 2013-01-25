@@ -35,20 +35,47 @@ Usage
 2. Start the space server and an object host with appropriate
    settings, enabling Twitter specific settings.
 
+    # The region covers the US region <-129.02, 24.9, 0> to <-58.71,
+    # 50.6, 0>. The particular region doesn't actually matter much
+    # until you move to multiple space servers, but the starting
+    # location of the client must be in this region.
     ./space_d --command.commander=http \
               --command.commander-options=--port=7777 \
               --space.extra-plugins=space-twitter \
+              "--region=<<-129.02,24.9,-1000>,<-58.71,50.6,1000>>"
               --aggmgr=twitter \
-              --prox.object.handler=rtreecutagg \
-              --prox.server.handler=rtreecutagg \
+              --prox=libprox-manual \
+              --prox.oh.handler=rtreecut \
+              --prox.oh.node-data=twitter-term-bloom \
               --aggmgr.host=localhost \
-              --aggmgr.service=10000
+              --aggmgr.service=10000 \
+              --twitter.bloom.buckets=8192 \
+              --twitter.bloom.hashes=2
 
+    # OH for Tweet objects
+    ./cppoh_d --command.commander=http \
+              --command.commander-options=--port=7779 \
+              --object-factory-opts=--db=nothing.db \
+              --objecthost=--scriptManagers=js:{--import-paths=/home/ewencp/twitter-vis.git/emerson} \
+              --oh.query-processor=manual \
+              --oh.query-data=twitter-term-bloom \
+              --manual-query.handler=term-region \
+              --manual-query.handler-node-data=twitter-term-bloom
+              --twitter.bloom.buckets=8192 \
+              --twitter.bloom.hashes=2
+
+    # Client
     ./cppoh_d --command.commander=http \
               --command.commander-options=--port=7778 \
               --oh.extra-plugins=oh-clutter \
               --object-factory-opts=--db=/path/to/repo/scenes/twitter-client.db \
-              --objecthost=--scriptManagers=js:{--import-paths=/home/ewencp/twitter-vis.git/emerson}
+              --objecthost=--scriptManagers=js:{--import-paths=/home/ewencp/twitter-vis.git/emerson} \
+              --oh.query-processor=manual \
+              --oh.query-data=twitter-term-bloom \
+              --manual-query.handler=term-region \
+              --manual-query.handler-node-data=twitter-term-bloom
+              --twitter.bloom.buckets=8192 \
+              --twitter.bloom.hashes=2
 
 3. Replay the data with the Python script:
 

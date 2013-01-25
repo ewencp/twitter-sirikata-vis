@@ -142,7 +142,7 @@ started = time.time()
 first_tweet_at = None
 processed = 0
 oh_host = 'localhost'
-oh_port = 7778
+oh_port = 7779
 speed_factor = 1
 
 tweet_file = os.path.abspath(sys.argv[1])
@@ -160,7 +160,7 @@ class AggregateHttpRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     filesystem and overrides do_POST to handle upload requests, which
     are stored on disk to be served for GETs.'''
     def do_POST(self):
-        print "Handling POST", self.path
+        #print "Handling POST", self.path
 
         raw_id = self.path[1:] # remove / from front
         mesh_file = os.path.join(data_dir, raw_id)
@@ -172,14 +172,14 @@ class AggregateHttpRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 count += len(data)
                 fp.write(data)
 
-        print "Saved file POST", self.path
+        #print "Saved file POST", self.path
 
         self.send_response(200)
         self.send_header("Content-Type", "text/json")
         self.send_header("Content-Length", 0)
         self.end_headers()
 
-        print "Finished handling POST", self.path
+        #print "Finished handling POST", self.path
 
 def http_server_main():
     os.chdir(data_dir)
@@ -291,3 +291,7 @@ with open(tweet_file, 'r') as fp:
             }
         result = http_command(oh_host, oh_port, 'oh.objects.command', params=cmd_params)
         if result is None or 'error' in result: print "Error handling command:", result and result['error']
+
+# Leave HTTP server thread running after we finish loading objects
+while True:
+    time.sleep(1)
