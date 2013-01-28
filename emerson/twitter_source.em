@@ -41,7 +41,7 @@ var init = function() {
                     'pos': <data.pos.lon, data.pos.lat, 0>,
                     //'orient': x,
                     'mesh': data.mesh,
-                    'scale': 1,
+                    'scale': 0.01,
                     //'solidAngleQuery': x,
                     'callback': function(pres) {
                         if (!pres)

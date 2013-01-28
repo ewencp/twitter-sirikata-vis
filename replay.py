@@ -25,6 +25,12 @@ stopwords = nltk.corpus.stopwords.words('english') + [
     '?', '!', ';', '$', '%', '&', '-', '+', '=', '|', '`', '_', '.', '{', '}', ',', '/', '[', ']', '#', '@', ':', "'", '(', ')', '^', '~', '*', #punctuation
     'c', 'u', 'r', 'o', 'd', 'e', 'f', 'g', 'v', 'h', 'x', 'w', 'j', 'y', 'k', 'l', 'z', 'm', 'n', 'p', 'b', 'q' # bad spelling
     ]
+# Some more things that our processing doesn't catch, often weird
+# parts of words like 't, web things like http, or bad conversions
+# like < and > to lt and gt
+stopwords = stopwords + [
+    'http', 'gt', 'lt', "'t", 'la', "'s", "''", 'amp', "n't", "'m", "...", "de", "``"
+]
 stopwords = set(stopwords)
 
 def splitlist(l, on):

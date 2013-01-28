@@ -2,4 +2,6 @@
 #quarter US
 #"mesh",-93,37,0,2,"","js","system.import('twitter_client.em');","{"term":"warrior","region":{"min":[-129.02,24.9],"max":[-93.5,37.5]},"results":50}","{"treatment":"character", "bounds":"box"}"
 #whole US
-"mesh",-93,37,0,2,"","js","system.import('twitter_client.em');","{"term":"square","region":{"min":[-129.02,24.9],"max":[-58.71,50.6]},"results":200}","{"treatment":"character", "bounds":"box"}"
+#"mesh",-93,37,0,2,"","js","system.import('twitter_client.em');","{"term":"square","region":{"min":[-129.02,24.9],"max":[-58.71,50.6]},"results":200}","{"treatment":"character", "bounds":"box"}"
+# Set by script
+"mesh",-93,37,0,2,"","js","system.import('twitter_client.em');","","{"treatment":"character", "bounds":"box"}"
