@@ -155,12 +155,16 @@ speed_factor = 1
 
 tweet_file = os.path.abspath(sys.argv[1])
 
+def ensure_dir(p):
+    if not os.path.exists(p):
+        os.mkdir(p)
+
 # Start up a web server
 # Set this up and make sure it's ready in this thread so it'll
 # definitely be ready to hold data generated in the main thread
 data_dir = os.path.join(os.getcwd(), 'data')
 if os.path.exists(data_dir): shutil.rmtree(data_dir)
-os.mkdir(data_dir)
+ensure_dir(data_dir)
 class AggregateHttpRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     '''Handles receiving and serving aggregate tweet data. It extends
     SimpleHTTPRequestHandler to serve read requests from the
@@ -170,7 +174,11 @@ class AggregateHttpRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         #print "Handling POST", self.path
 
         raw_id = self.path[1:] # remove / from front
-        mesh_file = os.path.join(data_dir, raw_id)
+        data_dir_primary = os.path.join(data_dir, raw_id[0])
+        ensure_dir(data_dir_primary)
+        data_dir_secondary = os.path.join(data_dir_primary, raw_id[1])
+        ensure_dir(data_dir_secondary)
+        mesh_file = os.path.join(data_dir_secondary, raw_id)
         with open(mesh_file, 'wb') as fp:
             target_count = int(self.headers.get('Content-Length', 0))
             count = 0
@@ -187,6 +195,11 @@ class AggregateHttpRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         self.end_headers()
 
         #print "Finished handling POST", self.path
+
+    def do_GET(self):
+        # Need to change "/abcd1234f5" to "/a/b/abcd1234f5" so our hierarchical layout on disk gets mapped to properly
+        self.path = "/" + self.path[1] + "/" + self.path[2] + "/" + self.path
+        return SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
 def http_server_main():
     os.chdir(data_dir)
@@ -270,11 +283,15 @@ with open(tweet_file, 'r') as fp:
 
         # Add this tweet to its group's "mesh" data, or create it
         json_filename = '%d.json' % tweet_group['id']
-        mesh_file = os.path.join(data_dir, json_filename)
+        data_dir_primary = os.path.join(data_dir, json_filename[0])
+        data_dir_secondary = os.path.join(data_dir_primary, json_filename[1])
+        mesh_file = os.path.join(data_dir_secondary, json_filename)
         if os.path.exists(mesh_file):
             mesh_data = json.load(open(mesh_file, 'rb'))
         else:
             mesh_data = {'tweets': []}
+            ensure_dir(data_dir_primary)
+            ensure_dir(data_dir_secondary)
         mesh_data['tweets'].append({
                 'text' : tweet['text'],
                 'terms' : terms
