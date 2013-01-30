@@ -149,6 +149,8 @@ first_tweet_at = None
 processed = 0
 oh_host = 'localhost'
 oh_port = 7779
+HTTP_HOST = 'ahoy.stanford.edu'
+HTTP_PORT = 10000
 speed_factor = 1
 
 tweet_file = os.path.abspath(sys.argv[1])
@@ -159,7 +161,6 @@ tweet_file = os.path.abspath(sys.argv[1])
 data_dir = os.path.join(os.getcwd(), 'data')
 if os.path.exists(data_dir): shutil.rmtree(data_dir)
 os.mkdir(data_dir)
-HTTP_PORT = 10000
 class AggregateHttpRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     '''Handles receiving and serving aggregate tweet data. It extends
     SimpleHTTPRequestHandler to serve read requests from the
@@ -189,6 +190,7 @@ class AggregateHttpRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
 def http_server_main():
     os.chdir(data_dir)
+    # No HTTP_HOST, '' indicates all interfaces
     httpd = SocketServer.TCPServer(('',HTTP_PORT), AggregateHttpRequestHandler)
     httpd.serve_forever()
 
@@ -281,7 +283,7 @@ with open(tweet_file, 'r') as fp:
         # The URL has an extra query parameter on the end to make each
         # version unique since we use the same basic ID for the object
         # but change the "mesh" file contents
-        mesh_url = 'http://localhost:%d/%s?v=%d' % (HTTP_PORT, json_filename, len(mesh_data['tweets']))
+        mesh_url = 'http://%s:%d/%s?v=%d' % (HTTP_HOST, HTTP_PORT, json_filename, len(mesh_data['tweets']))
 
         cmd_params = {
             'object' : ho_id,
