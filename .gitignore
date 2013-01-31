@@ -3,6 +3,7 @@ credentials.json
 
 # Collected data
 tweets-*.log
+tweets-*.log.freq
 
 # Python by-products
 *.pyc

@@ -10,12 +10,6 @@ import threading, os, shutil
 import nltk, twtokenize
 import SimpleHTTPServer, SocketServer
 
-def ascii_safe(item):
-    if type(item) == tuple:
-        item = ' '.join(item)
-    item = unicodedata.normalize('NFKD', unicode(item)).encode('ascii', 'ignore')
-    return item
-
 # Stop words. NLTK provides some in their data set (you need to use
 # their nltk.download() tool to get them). They could probably be
 # better. Add a few more to deal with obvious missing items,
